@@ -1,0 +1,25 @@
+Volatile гарантирует что каждый поток работает непосредственно с этой переменной. Не с кешем.<br>
+если обращение к переменной ВСЕГДА происходит их Synchronized блоков - Volatile не нужен<br>
+Дедлок(Синхронизация и блокировки):<br>
+<pre>
+Thread thread1 = new Thread(() -> {
+	synchronized (resource1) {
+		System.out.println("Thread 1: Holding resource 1...");
+		synchronized (resource2) {
+			System.out.println("Thread 1: Acquired resource 2!");
+		}
+	}
+});
+
+Thread thread2 = new Thread(() -> {
+	synchronized (resource2) {
+		System.out.println("Thread 2: Holding resource 2...");
+		synchronized (resource1) {
+			System.out.println("Thread 2: Acquired resource 1!");
+		}
+	}
+});
+</pre>
+Дедлок бывает когда потоки взаимно ждут друг друга<br>
+в первом потоке thread2.join();<br>
+а во втором thread1.join();<br>

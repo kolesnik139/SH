@@ -1,0 +1,11 @@
+<b>Common Table Expressions (CTE)</b>
+<pre>
+WITH CTE_Name AS (
+    SELECT column1, column2
+    FROM some_table
+    WHERE condition
+)
+SELECT column1, column2
+FROM CTE_Name
+WHERE another_condition;
+</pre>
