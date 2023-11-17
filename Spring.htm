@@ -1,7 +1,7 @@
 <b>Application Context</b> Представляет собой Spring Container. Можно создать несколько<br>
 <details>
     <summary><b>Способы создания Application Context</b></summary>
-	&nbsp&nbsp&nbsp&nbsp1. Spring Boot сам создаёт и конфигурирует<br>
+	&nbsp&nbsp&nbsp&nbsp1. Spring Boot создаёт: ApplicationContext context = SpringApplication.run(App.class, args);<br>
 	&nbsp&nbsp&nbsp&nbsp2. new ClassPathXmlApplicationContext(...)<br>
 	&nbsp&nbsp&nbsp&nbsp3. new AnnotationConfigApplicationContext(...) и другие способы.
 </details>
@@ -45,17 +45,20 @@
 	&nbsp&nbsp&nbsp&nbsp3. С помощью аннотаций @Component, @Service, @Repository и @Controller<br>
 	
 	<details>
-	<summary><b>&nbsp&nbsp&nbsp&nbsp4. Регистрация вручную через BeanDefinitionRegistry API</b></summary>
+	<summary><b>&nbsp&nbsp&nbsp&nbsp4. Регистрация вручную через BeanDefinitionRegistry API (В уже поднятый контейнер)</b></summary>
 	<pre>
-	AbstractApplicationContext context = new AnnotationConfigApplicationContext();
-	((BeanDefinitionRegistry) context).registerBeanDefinition("someBean", 
-		  new RootBeanDefinition(SomeBean.class));
-	context.refresh();
+	ConfigurableApplicationContext configurableApplicationContext = (ConfigurableApplicationContext) context;
+
+	BeanDefinitionRegistry beanDefinitionRegistry = (BeanDefinitionRegistry) configurableApplicationContext.getBeanFactory();
+
+	GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+	beanDefinition.setBeanClass(DynamicBean.class);
+	beanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
+
+	beanDefinitionRegistry.registerBeanDefinition("dynamicBean", beanDefinition);
 	</pre>
 	</details>
-	
-	&nbsp&nbsp&nbsp&nbsp5. Через BeanFactoryPostProcessor<br>
-	&nbsp&nbsp&nbsp&nbsp6. Через FactoryBean 
+	&nbsp&nbsp&nbsp&nbsp5. Через FactoryBean 
 </details>
 <br>
 
@@ -83,7 +86,7 @@
 	&nbsp&nbsp&nbsp&nbsp В случае нескольких наследников или имплементаций: Отметить один из них @Primary <br>
 	&nbsp&nbsp&nbsp&nbsp или Применить @Qualifier:
 	<pre>
-	@Autowired
+	@Autowired //ОТМЕЧАЕТ КАКОЙ КОНСТРУКТОР ИСПОЛЬЗОВАТЬ ПРИ СОЗДАНИИ БИНА
 	public MyComponent(@Qualifier("serviceA") MyService myService) {// В КОНСТРУКТОРЕ
 		this.myService = myService;
 	}
@@ -232,7 +235,7 @@
 	<details>
 	<summary><b>&nbsp&nbsp&nbsp&nbsp 1. Аннотация @Value)</b></summary>
 	<pre>
-	@Value("${app.message}")
+	@Value("${app.message:defaultValue}")
 	private String message;
 	</pre>
 	</details>
@@ -308,6 +311,7 @@
 
 <details>
     <summary><b>Параметры @Transactional</b></summary>
+	&nbsp&nbsp&nbsp&nbsp @Transactional реализована с помощью AOP
 	<blockquote><b>1. Propagation</b><br>
 		REQUIRED (По умолчанию): Если нет активной транзакции, создается новая. Если есть - работает в старой.<br>
 		REQUIRES_NEW: Создает новую транзакцию независимо от наличия активной. Если активная транзакция существует, она будет приостановлена до завершения новой.<br>
@@ -405,7 +409,9 @@
 </details>
 <br>
 <details>
-    <summary><b>Spring Boot Autoconfiguration</b> Основана на условных аннотациях:</summary>
+    <summary><b>Spring BOOT</b></summary>
+	<details>
+    <summary>&nbsp&nbsp&nbsp&nbsp <b>1. Автоконфигурация</b> Основана на условных аннотациях:</summary>
 	<blockquote>
 		<b>@ConditionalOnClass и @ConditionalOnMissingClass:</b> доступен/нет в classpath.<br>
 		<b>@ConditionalOnBean и @ConditionalOnMissingBean:</b> бины уже определены в контексте<br>
@@ -414,8 +420,46 @@
 		<b>@ConditionalOnWebApplication и @ConditionalOnNotWebApplication:</b> веб-приложение<br>
 		<b>@ConditionalOnExpression:</b> выражение SpEL (Spring Expression Language)<br>
 		<b>@ConditionalOnJava:</b> соответствующая версия Java<br>
-		<b>@Conditional:</b> класс имплементирующий Condition<br>
+		<b>@Conditional(ConditionalImpl.class):</b> (из Spring Framework) класс имплементирующий Condition<br>
 	</blockquote>
+	</details>
+	
+	<details>
+    <summary>&nbsp&nbsp&nbsp&nbsp <b>2. Стартеры</b></summary>
+	<blockquote>
+		<b>spring-boot-starter-web</b> Веб-приложения с использованием Spring MVC.<br>
+		<b>spring-boot-starter-data-jpa</b> Для интеграции с JPA через Hibernate.<br>
+		<b>spring-boot-starter-data-mongodb</b> Для работы с MongoDB.<br>
+		<b>spring-boot-starter-security</b> Для интеграции Spring Security.<br>
+		<b>spring-boot-starter-actuator</b> Для мониторинга и управления вашим приложением в runtime.<br>
+		<b>spring-boot-starter-thymeleaf</b> Для работы с Thymeleaf.<br>
+		<b>spring-boot-starter-cache</b> выражение SpEL (Spring Expression Language)<br>
+		<b>spring-boot-starter-amqp</b> Для работы с Advanced Message Queuing Protocol (AMQP), например, RabbitMQ<br>
+		<b>spring-boot-starter-data-kafka</b> Kafka<br>
+		<b>spring-boot-starter-test</b>  Включает библиотеки JUnit, Mockito, ...<br>
+		<br>
+		<b>Как создать стартер:</b><br>
+		1. Создать Spring Boot проект без main.<br>
+		2. Вместо @Component использовать Java конфигурацию.<br>
+		3. Путь к конфигурации прописать в resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports<br>
+		Раньше в в resources/META-INF/spring.factories
+	</blockquote>
+	
+	</details>
+	
+	&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp <b>3. Embedded web servers</b> Tomcat, Jetty: для самодостаточных приложений, которые запускаются из JAR или WAR файла: java -jar имя_файла.jar
+
+	<details>
+    <summary>&nbsp&nbsp&nbsp&nbsp <b>4. Production-ready features</b> Встроенные функции:</summary>
+	<blockquote>
+		<b>1. Мониторинг (Actuator):</b> Предоставляет endpoints для мониторинга состояния и поведения приложения.<br>
+		<b>2. Внешние конфигурации:</b> Возможность конфигурировать приложение без необходимости изменения кода.<br>
+		<b>3. Логгирование:</b> Логгирование с возможностью дополнительной конфигурации.<br>
+		<b>4. Безопасность:</b> Механизмы безопасности для аутентификации, авторизации и других аспектов.<br>
+		<b>5. Диагностика:</b> Инструменты для обнаружения и решения проблем в рабочем приложении.
+	</blockquote>
+	</details>
+	
 </details>
 <br>
 <details>

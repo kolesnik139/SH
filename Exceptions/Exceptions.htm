@@ -3,6 +3,7 @@ Resource иммплементирует интерфейс <b>Closable</b><br>
 Reader, Writer, FileReader, BufferedReader, InputStream, OutputStream, Socket, ServerSocket.<br>
 или <b>AutoClosable</b><br>
 (JDBC) Connection, Statement, ResultSet.<br>
+<b>Если исключение и в try и при close(), то основным будет из try, из close() будет подавленным.</b> (проверено)
 <pre>
     public void doSolution() {
         try (Resource resource = new Resource()) {
@@ -20,8 +21,10 @@ Reader, Writer, FileReader, BufferedReader, InputStream, OutputStream, Socket, S
     }
 </pre>
 
-*******************************
-<br>
+*******************************<br>
+<b>Происходит эксэпшн в try и в finally. Будет тот, что в finally. Подавленного не будет</b> (проверено)
+<br>*******************************<br>
+
 Если несколько блоков <b>Catch</b>, то сначала специфичные (дети), потом родители<br>
 catch (NumberFormatException | NullPointerException){...}<br>
 можно try + catch, можно try + finally.<br>

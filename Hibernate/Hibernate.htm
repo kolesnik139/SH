@@ -454,6 +454,10 @@
 <details>
 	<summary><b>JpaRepository</b></summary>
 	<pre>
+	@NoRepositoryBean
+	public interface JpaRepository<T, ID> extends ListCrudRepository<T, ID>, ListPagingAndSortingRepository<T, ID>, QueryByExampleExecutor<T> {...}
+
+
 	public interface UserRepository extends JpaRepository<User, Long> {
 	
 		//Предоставляет методы по умолчанию
@@ -466,6 +470,8 @@
 		...
 	
 		List<User> findByUsername(String username); //Реализует по имени!
+		List<User> findByUsernameLike(String username);
+		List<User> findByUsernameEndingWith(String username);
 	
 		@Query("SELECT u FROM User u WHERE u.firstname = ?1")
 		List<User> findByFirstName(String firstName);
